@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CardSplit Dashboard</title>
+    <!-- Tailwind CSS (CDN for rapid development) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6">
+        <h1 class="text-2xl font-bold mb-4">💳 CardSplit Dashboard</h1>
+        
+        <!-- The HTMX Upload Form -->
+        <div class="mb-8 p-4 border border-dashed border-gray-300 rounded bg-gray-50">
+            <h2 class="text-lg font-semibold mb-2">Upload HDFC Infinia Statement</h2>
+            <!-- 
+              hx-post: Sends a relative POST request to our Go server (secure best practice)
+              hx-encoding: Required for file uploads in HTMX
+              hx-target: Tells HTMX where to swap the returned HTML fragment
+            -->
+            <form hx-post="/upload" 
+                  hx-encoding="multipart/form-data" 
+                  hx-target="#transaction-results" 
+                  class="flex items-center space-x-4">
+                
+                <input type="file" name="statement" accept=".csv" required class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 transition">Upload</button>
+            </form>
+        </div>
+
+        <!-- This div will be populated by HTMX with the server's HTML response -->
+        <div id="transaction-results">
+            <p class="text-gray-500 text-sm">Upload a CSV to see transactions...</p>
+        </div>
+    </div>
+</body>
+</html>
