@@ -2,4 +2,7 @@ module github.com/hackrush01/cardsplit
 
 go 1.26.2
 
-require github.com/mattn/go-sqlite3 v1.14.42 // indirect
+require (
+	github.com/mattn/go-sqlite3 v1.14.42 // indirect
+	golang.org/x/crypto v0.50.0
+)
