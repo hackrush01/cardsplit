@@ -22,7 +22,7 @@ type Transaction struct {
 	Amount           int
 	Rewards          RewardData
 	RawLabel         string
-	MappedUser       string
+	Username         string
 }
 
 // AmountFloat is a helper method used exclusively by the UI to display the float value

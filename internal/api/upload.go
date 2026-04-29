@@ -22,7 +22,7 @@ func UploadHandler(db *sql.DB) http.HandlerFunc {
 			mappingPath = "./configs/card_mapping.json"
 		}
 
-		userMapping, err := config.LoadCardMapping(mappingPath)
+		cardMapping, err := config.LoadCardMapping(mappingPath)
 		if err != nil {
 			http.Error(w, "Failed to load user configurations", http.StatusInternalServerError)
 			return
@@ -48,12 +48,13 @@ func UploadHandler(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		// 3. Map the Raw Bank Labels to your Actual Family Members
+		// 3. Map the Raw Bank Labels to the login username for this statement.
 		for i, txn := range statement.Transactions {
-			if mappedData, exists := userMapping[txn.RawLabel]; exists {
-				statement.Transactions[i].MappedUser = mappedData.Name
+			username, _, err := cardMapping.GetUserDetails("Infinia", txn.RawLabel)
+			if err == nil {
+				statement.Transactions[i].Username = username
 			} else {
-				statement.Transactions[i].MappedUser = "Unmapped (" + txn.RawLabel + ")"
+				statement.Transactions[i].Username = ""
 			}
 		}
 
