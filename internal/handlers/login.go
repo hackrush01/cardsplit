@@ -9,8 +9,13 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/hackrush01/cardsplit/internal/storage"
 	"golang.org/x/crypto/bcrypt"
 )
+
+type LoginTemplateData struct {
+	Users []string
+}
 
 // Helper to render inline HTML errors for HTMX
 func sendHTMXError(w http.ResponseWriter, msg string) {
@@ -19,11 +24,34 @@ func sendHTMXError(w http.ResponseWriter, msg string) {
 	fmt.Fprintf(w, `<p class="text-red-500 text-sm font-medium">%s</p>`, msg)
 }
 
+func RenderLogin(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Fetch users from the database
+		users, err := storage.GetAllUsers(db)
+		if err != nil {
+			http.Error(w, "Load users", http.StatusInternalServerError)
+			return
+		}
+
+		data := LoginTemplateData{
+			Users: users,
+		}
+
+		tmpl, err := template.ParseFiles("web/templates/login.html")
+		if err != nil {
+			http.Error(w, "Template error", http.StatusInternalServerError)
+			return
+		}
+
+		// Inject the data into the template
+		tmpl.Execute(w, data)
+	}
+}
+
 func LoginHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
-			tmpl := template.Must(template.ParseFiles("web/templates/login.html"))
-			tmpl.Execute(w, nil)
+			RenderLogin(db)(w, r)
 			return
 		}
 

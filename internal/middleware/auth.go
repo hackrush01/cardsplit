@@ -42,11 +42,11 @@ func handleUnauthorized(w http.ResponseWriter, r *http.Request) {
 	// 4. Secure HTMX Interactions
 	if r.Header.Get("HX-Request") == "true" {
 		// Intercept the redirect and return a 204 No Content status alongside an HX-Redirect response header
-		w.Header().Set("HX-Redirect", "/login")
+		w.Header().Set("HX-Redirect", "/")
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
 	// Standard redirect for non-HTMX requests
-	http.Redirect(w, r, "/login", http.StatusFound)
+	http.Redirect(w, r, "/", http.StatusFound)
 }

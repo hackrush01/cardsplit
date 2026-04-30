@@ -19,12 +19,10 @@
                 <label class="block text-gray-700 text-sm font-semibold mb-2" for="username">Select User</label>
                 <div class="relative">
                     <select id="username" name="username" class="w-full px-4 py-2 border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white">
-                        <option value="" disabled selected>Choose an account...</option>
-                        <option value="admin">Admin</option>
-                        <option value="AT">AT</option>
-                        <option value="GT">GT</option>
-                        <option value="ST">ST</option>
-                        <option value="VBT">VBT</option>
+                        <option value="" disabled selected>Choose an account</option>
+                        {{range .Users}}
+                            <option value="{{.}}">{{.}}</option>
+                        {{end}}
                     </select>
                 </div>
             </div>
@@ -33,7 +31,7 @@
                 <label class="block text-gray-700 text-sm font-semibold mb-2" for="password">Password</label>
                 <input type="password" id="password" name="password" required 
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-                    placeholder="Enter or set your password">
+                    placeholder="Password">
                 <p class="text-xs text-gray-500 mt-2">If this is your first time logging in, the password you enter will be saved as your permanent password.</p>
             </div>
 

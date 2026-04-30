@@ -4,71 +4,79 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+
+	"github.com/hackrush01/cardsplit/internal/models"
 )
-
-// CardConfig represents the JSON fields for a single card entry.
-type CardConfig struct {
-	CardType string `json:"card_type"`
-	Suffix   string `json:"suffix"`
-	CSVName  string `json:"csv_name"`
-}
-
-// UserConfig represents the flattened lookup data used by the app.
-type UserConfig struct {
-	Username string `json:"username"`
-	CardType string `json:"card_type"`
-	Suffix   string `json:"suffix"`
-}
-
-// cardMappingFile is the structure of the new card mapping JSON.
-type cardMappingFile struct {
-	Users map[string][]CardConfig `json:"users"`
-}
 
 // CardMapping holds the parsed mapping data for efficient lookups.
 type CardMapping struct {
-	mapping map[string]map[string]UserConfig // cardType -> csvName -> UserConfig
+	mapping   map[string]map[string]models.UserConfig // cardType -> csvName -> UserConfig
+	usernames []string
+}
+
+func MappingFilePath() string {
+	p := os.Getenv("CONFIG_PATH")
+	if p == "" {
+		p = "./configs/card_mapping.json"
+	}
+	return p
 }
 
 // LoadCardMapping reads the JSON file and initializes the CardMapping structure.
 func LoadCardMapping(filepath string) (*CardMapping, error) {
 	bytes, err := os.ReadFile(filepath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("read mapping file at %v: %w", filepath, err)
 	}
 
-	var raw cardMappingFile
+	var raw models.CardMappingFile
 	if err := json.Unmarshal(bytes, &raw); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unmarshal mapping file: %w", err)
 	}
 
-	mapping := make(map[string]map[string]UserConfig)
+	cm := &CardMapping{
+		mapping: make(map[string]map[string]models.UserConfig),
+	}
+
+	userSet := make(map[string]bool)
 	for userKey, cards := range raw.Users {
+		userSet[userKey] = true
 		for _, card := range cards {
-			if card.CSVName == "" {
-				return nil, fmt.Errorf("csv_name is required for user %q", userKey)
-			}
-
-			if _, exists := mapping[card.CardType]; !exists {
-				mapping[card.CardType] = make(map[string]UserConfig)
-			}
-
-			if existing, exists := mapping[card.CardType][card.CSVName]; exists {
-				if existing.Username != userKey {
-					return nil, fmt.Errorf("csv_name %q is already mapped to a different user", card.CSVName)
-				}
-				continue
-			}
-
-			mapping[card.CardType][card.CSVName] = UserConfig{
-				Username: userKey,
-				CardType: card.CardType,
-				Suffix:   card.Suffix,
+			if err := cm.addMapping(userKey, card); err != nil {
+				return nil, err
 			}
 		}
 	}
 
-	return &CardMapping{mapping: mapping}, nil
+	for u := range userSet {
+		cm.usernames = append(cm.usernames, u)
+	}
+
+	return cm, nil
+}
+
+func (cm *CardMapping) addMapping(username string, card models.CardConfig) error {
+	if card.CSVName == "" {
+		return fmt.Errorf("csv_name is required for user %q", username)
+	}
+
+	if _, exists := cm.mapping[card.CardType]; !exists {
+		cm.mapping[card.CardType] = make(map[string]models.UserConfig)
+	}
+
+	if existing, exists := cm.mapping[card.CardType][card.CSVName]; exists {
+		if existing.Username != username {
+			return fmt.Errorf("csv_name %q is already mapped to a different user", card.CSVName)
+		}
+		return nil
+	}
+
+	cm.mapping[card.CardType][card.CSVName] = models.UserConfig{
+		Username: username,
+		CardType: card.CardType,
+		Suffix:   card.Suffix,
+	}
+	return nil
 }
 
 // GetUserDetails retrieves the username and card suffix based on cardType and csvName.
@@ -84,4 +92,19 @@ func (cm *CardMapping) GetUserDetails(cardType, csvName string) (string, string,
 	}
 
 	return "", "", fmt.Errorf("no mapping found for cardType %q and csvName %q", cardType, csvName)
+}
+
+// Username returns the list of all configured usernames, including the injected "Admin" user.
+func (cm *CardMapping) Usernames() []string {
+	return cm.usernames
+}
+
+// GetConfiguredUsers is a helper to load the mapping and return configured usernames.
+// This maintains compatibility with the existing API while using the updated models.
+func GetConfiguredUsers(mappingFilePath string) ([]string, error) {
+	cm, err := LoadCardMapping(mappingFilePath)
+	if err != nil {
+		return nil, err
+	}
+	return cm.Usernames(), nil
 }

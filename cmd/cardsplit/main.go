@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/hackrush01/cardsplit/internal/api"
+	"github.com/hackrush01/cardsplit/internal/config"
 	"github.com/hackrush01/cardsplit/internal/handlers"
 	"github.com/hackrush01/cardsplit/internal/middleware"
 	"github.com/hackrush01/cardsplit/internal/storage"
@@ -14,21 +15,27 @@ import (
 func main() {
 	log.Println("Starting CardSplit Server...")
 
-	// 1. Initialize SQLite Database
 	db := storage.InitDB("./cardsplit.db")
 	defer db.Close()
 
-	// 2. Setup standard HTTP router
-	mux := http.NewServeMux()
+	users, err := config.GetConfiguredUsers(config.MappingFilePath())
+	if err != nil {
+		log.Fatalf("Read card mapping: %v", err)
+	}
 
-	mux.HandleFunc("/login", handlers.LoginHandler(db))
+	if err := storage.EnsureUsersExist(users, db); err != nil {
+		log.Fatalf("Initialize users in DB: %v", err)
+	}
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", handlers.LoginHandler(db))
 
 	// Temporary health check endpoint
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "CardSplit is running smoothly!")
 	})
 
-	mux.Handle("/", middleware.AuthMiddleware(db, http.HandlerFunc(api.PageHandler)))
+	mux.Handle("/dashboard", middleware.AuthMiddleware(db, http.HandlerFunc(api.PageHandler)))
 	mux.Handle("/upload", middleware.AuthMiddleware(db, http.HandlerFunc(api.UploadHandler(db))))
 
 	// 3. Start the Server
