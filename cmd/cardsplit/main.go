@@ -35,8 +35,10 @@ func main() {
 		fmt.Fprintln(w, "CardSplit is running smoothly!")
 	})
 
-	mux.Handle("/dashboard", middleware.AuthMiddleware(db, http.HandlerFunc(api.PageHandler)))
-	mux.Handle("/upload", middleware.AuthMiddleware(db, http.HandlerFunc(api.UploadHandler(db))))
+	mux.Handle("/statement", middleware.Auth(db, http.HandlerFunc(handlers.StatementViewHandler(db))))
+
+	mux.Handle("/dashboard", middleware.Auth(db, middleware.AdminOnly(http.HandlerFunc(api.PageHandler))))
+	mux.Handle("/upload", middleware.Auth(db, middleware.AdminOnly(http.HandlerFunc(api.UploadHandler(db)))))
 
 	// 3. Start the Server
 	port := ":8080"

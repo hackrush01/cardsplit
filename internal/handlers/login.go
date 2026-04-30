@@ -76,7 +76,6 @@ func LoginHandler(db *sql.DB) http.HandlerFunc {
 			}
 
 			if !hashedPassword.Valid || hashedPassword.String == "" {
-				// FIRST TIME LOGIN: Hash and save the new password
 				hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 				if err != nil {
 					sendHTMXError(w, "Error processing password")
@@ -89,7 +88,6 @@ func LoginHandler(db *sql.DB) http.HandlerFunc {
 					return
 				}
 			} else {
-				// SUBSEQUENT LOGIN: Verify the provided password against the stored hash
 				err = bcrypt.CompareHashAndPassword([]byte(hashedPassword.String), []byte(password))
 				if err != nil {
 					sendHTMXError(w, "Invalid password")
@@ -97,11 +95,9 @@ func LoginHandler(db *sql.DB) http.HandlerFunc {
 				}
 			}
 
-			// LOGIN SUCCESS: Generate session
-			sessionToken := generateSessionToken()
-
+			st := generateSessionToken()
 			_, err = db.Exec("INSERT INTO sessions (token, username, expires_at) VALUES (?, ?, ?)",
-				sessionToken, username, time.Now().AddDate(0, 6, 0))
+				st, username, time.Now().AddDate(0, 6, 0))
 			if err != nil {
 				sendHTMXError(w, "Error creating session")
 				return
@@ -109,15 +105,20 @@ func LoginHandler(db *sql.DB) http.HandlerFunc {
 
 			http.SetCookie(w, &http.Cookie{
 				Name:     "session_token",
-				Value:    sessionToken,
+				Value:    st,
 				Expires:  time.Now().AddDate(0, 6, 0),
 				HttpOnly: true,
 				Path:     "/",
 				SameSite: http.SameSiteStrictMode, // Added for extra CSRF protection
 			})
 
-			// Tell HTMX to redirect the browser to the dashboard
-			w.Header().Set("HX-Redirect", "/dashboard")
+			if storage.GetUserRole(db, username) == "admin" {
+				w.Header().Set("HX-Redirect", "/dashboard")
+				w.WriteHeader(http.StatusNoContent)
+				return
+			}
+
+			w.Header().Set("HX-Redirect", "/statement")
 			w.WriteHeader(http.StatusNoContent)
 		}
 	}

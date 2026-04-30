@@ -74,6 +74,15 @@ func GetAllUsers(db *sql.DB) ([]string, error) {
 	return users, nil
 }
 
+func GetUserRole(db *sql.DB, username string) string {
+	var role string
+	err := db.QueryRow("SELECT role FROM users WHERE username = ?", username).Scan(&role)
+	if err != nil {
+		log.Fatalf("Unable to determine user role.")
+	}
+	return role
+}
+
 func createSchema(db *sql.DB) {
 	schema := `
 	CREATE TABLE IF NOT EXISTS users (

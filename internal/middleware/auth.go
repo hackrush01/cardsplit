@@ -4,14 +4,17 @@ import (
 	"context"
 	"database/sql"
 	"net/http"
+
+	"github.com/hackrush01/cardsplit/internal/storage"
 )
 
 // contextKey is used to prevent collisions in the context payload
 type contextKey string
 
 const UsernameKey contextKey = "username"
+const UserRoleKey contextKey = "userRole"
 
-func AuthMiddleware(db *sql.DB, next http.Handler) http.Handler {
+func Auth(db *sql.DB, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// 1. Extract User Identity from Session
 		cookie, err := r.Cookie("session_token")
@@ -29,11 +32,27 @@ func AuthMiddleware(db *sql.DB, next http.Handler) http.Handler {
 			return
 		}
 
+		// Retrieve the user's role from the database
+		userRole := storage.GetUserRole(db, username)
+
 		// Save this username directly into the Go http.Request context
 		ctx := context.WithValue(r.Context(), UsernameKey, username)
+		ctx = context.WithValue(ctx, UserRoleKey, userRole)
 
 		// Pass the new context to the downstream handlers
 		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
+// AdminOnly wraps an existing authenticated route to ensure the user is an Admin
+func AdminOnly(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Context().Value(UserRoleKey) != "admin" {
+			http.Redirect(w, r, "/statement", http.StatusSeeOther)
+			return
+		}
+
+		next.ServeHTTP(w, r)
 	})
 }
 

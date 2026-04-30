@@ -1,0 +1,50 @@
+<!-- web/templates/statement.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Statement View</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div class="statement-container">
+        <h1>View Statement</h1>
+
+        <!-- The Auto-Submitting Form -->
+        <form method="GET" action="/statement" class="filter-form">
+            <label for="card_name">Card Name:</label>
+            <select name="card_name" id="card_name" onchange="this.form.submit()">
+                <option value="">-- Select a Card --</option>
+                {{ range .AvailableCards }}
+                    <option value="{{ . }}" {{ if eq . $.SelectedCard }}selected{{ end }}>{{ . }}</option>
+                {{ end }}
+            </select>
+
+            <label for="statement_date">Statement Date:</label>
+            <select name="statement_date" id="statement_date" onchange="this.form.submit()">
+                <option value="">-- Select a Date --</option>
+                {{ range .AvailableDates }}
+                    <option value="{{ . }}" {{ if eq . $.SelectedDate }}selected{{ end }}>{{ . }}</option>
+                {{ end }}
+            </select>
+        </form>
+
+        <hr>
+
+        <!-- Only show the summary and table if both filters are selected -->
+        {{ if and .SelectedCard .SelectedDate }}
+            <div class="summary-card">
+                <h2>Statement Summary</h2>
+                <h3>Total Due: ₹{{ printf "%.2f" .TotalDueRupees }}</h3>
+            </div>
+            
+            <div class="transactions-section">
+                {{ template "transactions-table" . }}
+            </div>
+        {{ else }}
+            <p>Please select a card and a statement date to load your transactions.</p>
+        {{ end }}
+    </div>
+</body>
+</html>
