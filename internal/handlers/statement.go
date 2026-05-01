@@ -35,7 +35,9 @@ func StatementViewHandler(db *sql.DB) http.HandlerFunc {
 			transactions, _ = storage.TransactionsByStatement(db, username, selectedCard, selectedDate)
 
 			for _, t := range transactions {
-				totalDuePaise += t.Amount
+				if !t.IsPayment {
+					totalDuePaise += t.Amount
+				}
 			}
 		}
 

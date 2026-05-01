@@ -1,0 +1,21 @@
+{
+  "cards": {
+    "Infinia": {
+      "payments": [
+        "(?i)BPPY CC PAYMENT",
+        "(?i)AUTOPAY THANK YOU",
+        "(?i)AUTOPAY RETURNED"
+      ],
+      "rewards": {
+        "3": [],
+        "5": [
+          "(?i)GYFTR VIA SMARTBUY",
+          "(?i)SB GI FLIGHT",
+          "(?i)PHARMEASY VIA SMARTBUY",
+          "(?i)SB REDBUS"
+        ],
+        "10": []
+      }
+    }
+  }
+}

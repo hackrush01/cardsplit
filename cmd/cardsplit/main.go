@@ -18,6 +18,8 @@ func main() {
 	db := storage.InitDB("./cardsplit.db")
 	defer db.Close()
 
+	config.LoadCardRules(config.RuleFilePath())
+
 	users, err := config.GetConfiguredUsers(config.MappingFilePath())
 	if err != nil {
 		log.Fatalf("Read card mapping: %v", err)

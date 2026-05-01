@@ -53,9 +53,7 @@ func ParseInfiniaCSV(r io.Reader) (*models.Statement, error) {
 
 	stmt := &models.Statement{CardType: "Infinia"}
 	parseHeader(headerLines, stmt)
-	transactions, warnings := parseTransactions(txnLines)
-	stmt.Transactions = transactions
-	stmt.Warnings = warnings
+	stmt.Transactions, stmt.Warnings = parseTransactions(txnLines)
 
 	return stmt, nil
 }
@@ -128,16 +126,17 @@ func parseTransactions(lines []string) ([]models.Transaction, []string) {
 			brv, _ = strconv.Atoi(val)
 		}
 
-		txns = append(txns, models.Transaction{
-			Type:             cols[0],
-			CardHolderName:   cols[1],
-			TxnTimestamp:     txnTime,
-			KeyTimestamp:     keyTime,
-			Description:      cols[3],
-			Amount:           amount,
-			BaseRewardValue:  brv,
-			RewardMultiplier: 1,
-		})
+		tx := models.Transaction{
+			Type:            cols[0],
+			CardHolderName:  cols[1],
+			TxnTimestamp:    txnTime,
+			KeyTimestamp:    keyTime,
+			Description:     cols[3],
+			Amount:          amount,
+			BaseRewardValue: brv,
+		}
+		enrichTransaction("Infinia", &tx)
+		txns = append(txns, tx)
 	}
 	return txns, warnings
 }

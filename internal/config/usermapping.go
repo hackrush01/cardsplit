@@ -15,11 +15,11 @@ type UserCardMapping struct {
 }
 
 func MappingFilePath() string {
-	p := os.Getenv("CONFIG_PATH")
-	if p == "" {
-		p = "./configs/user_card_mapping.json"
+	ucmp := os.Getenv("USER_CARD_MAPPING_PATH")
+	if ucmp == "" {
+		ucmp = "./configs/user_card_mapping.json"
 	}
-	return p
+	return ucmp
 }
 
 // LoadCardMapping reads the JSON file and initializes the UserCardMapping structure.

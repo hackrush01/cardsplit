@@ -22,12 +22,14 @@
             <th class="border border-gray-200 px-4 py-2 text-left">Name</th>
             {{ end }}
             <th class="border border-gray-200 px-4 py-2 text-right">Amount</th>
+            <th class="border border-gray-200 px-4 py-2 text-center">Base Reward</th>
+            <th class="border border-gray-200 px-4 py-2 text-center">Reward Multiplier</th>
             <th class="border border-gray-200 px-4 py-2 text-center">Rewards</th>
         </tr>
     </thead>
     <tbody>
         {{range .Transactions}}
-        <tr class="hover:bg-gray-50">
+        <tr class="hover:bg-gray-50 {{if .IsPayment}}bg-green-50{{end}}">
             <td class="border border-gray-200 px-4 py-2">{{.Type}}</td>
             <td class="border border-gray-200 px-4 py-2">{{.TxnTimestamp.Format "02 Jan 2006 15:04:05"}}</td>
             <td class="border border-gray-200 px-4 py-2">{{.Description}}</td>
@@ -35,6 +37,8 @@
             <td class="border border-gray-200 px-4 py-2">{{.CardHolderName}}</td>
             {{ end }}
             <td class="border border-gray-200 px-4 py-2 text-right font-mono text-sm">₹{{printf "%.2f" .AmountFloat}}</td>
+            <td class="border border-gray-200 px-4 py-2 text-center font-mono text-sm">{{.BaseRewardValue}}</td>
+            <td class="border border-gray-200 px-4 py-2 text-center font-mono text-sm">{{.RewardMultiplier}}</td>
             <td class="border border-gray-200 px-4 py-2 text-center text-sm font-semibold">
                 {{if gt .TotalRewards 0}}
                     <span class="text-green-600">+{{.TotalRewards}}</span>
