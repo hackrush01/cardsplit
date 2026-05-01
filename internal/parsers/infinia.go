@@ -15,7 +15,6 @@ const separator = "~|~"
 
 // ParseInfiniaCSV reads the raw HDFC Infinia file and extracts a full Statement DTO.
 func ParseInfiniaCSV(r io.Reader) (*models.Statement, error) {
-	stmt := &models.Statement{CardType: "Infinia"}
 	scanner := bufio.NewScanner(r)
 
 	var headerLines, txnLines, rewardLines []string
@@ -52,6 +51,7 @@ func ParseInfiniaCSV(r io.Reader) (*models.Statement, error) {
 		return nil, err
 	}
 
+	stmt := &models.Statement{CardType: "Infinia"}
 	parseHeader(headerLines, stmt)
 	transactions, warnings := parseTransactions(txnLines)
 	stmt.Transactions = transactions
@@ -88,51 +88,55 @@ func parseTransactions(lines []string) ([]models.Transaction, []string) {
 		return txns, warnings
 	}
 
+	seen := map[int64]struct{}{} // Use a map to track seen timestamps for duplicate detection
+
 	// Skip the header row (Transaction type~|~...)
-	seen := map[int64]struct{}{}
 	for _, line := range lines[1:] {
 		cols := trimmedSplit(line, separator)
 		if len(cols) < 6 {
+			warnings = append(warnings, fmt.Sprintf("skipping malformed transaction line: %s", line))
 			continue
 		}
 
-		actualDate := parseDate(cols[2])
-		if actualDate.IsZero() {
+		txnTime := parseDate(cols[2])
+		if txnTime.IsZero() {
+			warnings = append(warnings, fmt.Sprintf("invalid date format for transaction: %s", cols[2]))
 			continue
 		}
 
-		shiftedDate := actualDate
-		if _, exists := seen[shiftedDate.Unix()]; exists {
-			original := shiftedDate.Format("02/01/2006 15:04:05")
+		keyTime := txnTime
+		if _, exists := seen[keyTime.Unix()]; exists {
+			o := keyTime.Format("02/01/2006 15:04:05")
 			for {
-				shiftedDate = shiftedDate.Add(time.Second)
-				if _, exists := seen[shiftedDate.Unix()]; !exists {
+				keyTime = keyTime.Add(time.Second)
+				if _, exists := seen[keyTime.Unix()]; !exists {
 					break
 				}
 			}
-			warnings = append(warnings, fmt.Sprintf("duplicate timestamp found for %s; shifted to %s", original, shiftedDate.Format("02/01/2006 15:04:05")))
+			warnings = append(warnings, fmt.Sprintf("duplicate timestamp found for %s; shifted to %s", o, keyTime.Format("02/01/2006 15:04:05")))
 		}
-		seen[shiftedDate.Unix()] = struct{}{}
+		seen[keyTime.Unix()] = struct{}{}
 
 		amount := parseAmount(cols[4])
 		if cols[5] == "Cr" {
 			amount = -amount
 		}
 
-		rewards := models.RewardData{Multiplier: 1}
+		var brv int
 		if len(cols) >= 7 && cols[6] != "" {
 			val := strings.ReplaceAll(cols[6], " ", "")
-			rewards.BaseValue, _ = strconv.Atoi(val)
+			brv, _ = strconv.Atoi(val)
 		}
 
 		txns = append(txns, models.Transaction{
 			Type:             cols[0],
-			RawLabel:         cols[1],
-			ActualTimestamp:  actualDate,
-			ShiftedTimestamp: shiftedDate,
+			CardHolderName:   cols[1],
+			TxnTimestamp:     txnTime,
+			KeyTimestamp:     keyTime,
 			Description:      cols[3],
 			Amount:           amount,
-			Rewards:          rewards,
+			BaseRewardValue:  brv,
+			RewardMultiplier: 1,
 		})
 	}
 	return txns, warnings

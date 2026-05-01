@@ -2,7 +2,6 @@ package storage
 
 import (
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/hackrush01/cardsplit/internal/models"
@@ -46,7 +45,6 @@ func StatementDates(db *sql.DB, username string, cardType string) ([]string, err
 		if err := rows.Scan(&date); err != nil {
 			return nil, err
 		}
-		fmt.Printf("Raw statement_date from DB: %v\n", date)
 		dates = append(dates, date.Format("2006-01-02"))
 	}
 	return dates, nil
@@ -55,7 +53,7 @@ func StatementDates(db *sql.DB, username string, cardType string) ([]string, err
 // TransactionsByStatement retrieves all transactions for a given user's statement.
 func TransactionsByStatement(db *sql.DB, username string, cardType string, statementDate string) ([]models.Transaction, error) {
 	rows, err := db.Query(`
-		SELECT card_type, transaction_timestamp, actual_transaction_timestamp, card_holder_name, description, amount
+		SELECT card_type, transaction_timestamp, description, amount, base_reward_value, reward_multiplier
 		FROM transactions 
 		WHERE username = ? AND card_type = ? AND statement_date = ? 
 		ORDER BY transaction_timestamp ASC`,
@@ -70,11 +68,11 @@ func TransactionsByStatement(db *sql.DB, username string, cardType string, state
 		var t models.Transaction
 		err := rows.Scan(
 			&t.Type,
-			&t.ShiftedTimestamp,
-			&t.ActualTimestamp,
-			&t.RawLabel,
+			&t.TxnTimestamp,
 			&t.Description,
 			&t.Amount,
+			&t.BaseRewardValue,
+			&t.RewardMultiplier,
 		)
 		if err != nil {
 			return nil, err

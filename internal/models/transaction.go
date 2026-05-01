@@ -2,30 +2,25 @@ package models
 
 import "time"
 
-// RewardData encapsulates reward logic to make it extensible for future multipliers
-type RewardData struct {
-	BaseValue  int
-	Multiplier int
-}
-
-// Total calculates the final reward points
-func (r RewardData) Total() int {
-	return int(r.BaseValue * r.Multiplier)
-}
-
 // Transaction represents a standardized ledger entry, regardless of the bank.
 type Transaction struct {
 	Type             string
-	ActualTimestamp  time.Time // actual transaction timestamp
-	ShiftedTimestamp time.Time // shifted timestamp used for storage uniqueness
+	KeyTimestamp     time.Time // key timestamp is used for storage uniqueness
+	Username         string
+	TxnTimestamp     time.Time // real transaction timestamp
+	CardHolderName   string
 	Description      string
 	Amount           int
-	Rewards          RewardData
-	RawLabel         string
-	Username         string
+	BaseRewardValue  int
+	RewardMultiplier int
 }
 
 // AmountFloat is a helper method used exclusively by the UI to display the float value
 func (t Transaction) AmountFloat() float64 {
 	return float64(t.Amount) / 100.0
+}
+
+// TotalRewards calculates the final reward points
+func (t Transaction) TotalRewards() int {
+	return int(t.BaseRewardValue * t.RewardMultiplier)
 }

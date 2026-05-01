@@ -30,17 +30,14 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", handlers.LoginHandler(db))
 
-	// Temporary health check endpoint
+	mux.Handle("/statement", middleware.Auth(db, http.HandlerFunc(handlers.StatementViewHandler(db))))
+	mux.Handle("/dashboard", middleware.Auth(db, middleware.AdminOnly(http.HandlerFunc(handlers.AdminDashboardHandler))))
+	mux.Handle("/upload", middleware.Auth(db, middleware.AdminOnly(http.HandlerFunc(api.UploadHandler(db)))))
+
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "CardSplit is running smoothly!")
 	})
 
-	mux.Handle("/statement", middleware.Auth(db, http.HandlerFunc(handlers.StatementViewHandler(db))))
-
-	mux.Handle("/dashboard", middleware.Auth(db, middleware.AdminOnly(http.HandlerFunc(api.PageHandler))))
-	mux.Handle("/upload", middleware.Auth(db, middleware.AdminOnly(http.HandlerFunc(api.UploadHandler(db)))))
-
-	// 3. Start the Server
 	port := ":8080"
 	log.Printf("Server listening on %s\n", port)
 

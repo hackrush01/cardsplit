@@ -20,13 +20,11 @@ type LoginTemplateData struct {
 // Helper to render inline HTML errors for HTMX
 func sendHTMXError(w http.ResponseWriter, msg string) {
 	w.Header().Set("Content-Type", "text/html")
-	// Returning 200 OK so HTMX easily swaps it into the target div
 	fmt.Fprintf(w, `<p class="text-red-500 text-sm font-medium">%s</p>`, msg)
 }
 
 func RenderLogin(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// Fetch users from the database
 		users, err := storage.GetAllUsers(db)
 		if err != nil {
 			http.Error(w, "Load users", http.StatusInternalServerError)
@@ -43,7 +41,6 @@ func RenderLogin(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		// Inject the data into the template
 		tmpl.Execute(w, data)
 	}
 }

@@ -10,13 +10,17 @@
 </div>
 {{end}}
 {{ define "transactions-table" }}
+{{ $hasName := false }}
+{{ range .Transactions }}{{ if .CardHolderName }}{{ $hasName = true }}{{ end }}{{ end }}
 <table class="min-w-full table-auto border-collapse border border-gray-200 transaction-table">
     <thead class="bg-gray-100">
         <tr>
             <th class="border border-gray-200 px-4 py-2 text-left">Type</th>
             <th class="border border-gray-200 px-4 py-2 text-left">Date / Time</th>
             <th class="border border-gray-200 px-4 py-2 text-left">Description</th>
+            {{ if $hasName }}
             <th class="border border-gray-200 px-4 py-2 text-left">Name</th>
+            {{ end }}
             <th class="border border-gray-200 px-4 py-2 text-right">Amount</th>
             <th class="border border-gray-200 px-4 py-2 text-center">Rewards</th>
         </tr>
@@ -25,15 +29,17 @@
         {{range .Transactions}}
         <tr class="hover:bg-gray-50">
             <td class="border border-gray-200 px-4 py-2">{{.Type}}</td>
-            <td class="border border-gray-200 px-4 py-2">{{.ActualTimestamp.Format "02 Jan 2006 15:04:05"}}</td>
+            <td class="border border-gray-200 px-4 py-2">{{.TxnTimestamp.Format "02 Jan 2006 15:04:05"}}</td>
             <td class="border border-gray-200 px-4 py-2">{{.Description}}</td>
-            <td class="border border-gray-200 px-4 py-2">{{.RawLabel}}</td>
+            {{ if $hasName }}
+            <td class="border border-gray-200 px-4 py-2">{{.CardHolderName}}</td>
+            {{ end }}
             <td class="border border-gray-200 px-4 py-2 text-right font-mono text-sm">₹{{printf "%.2f" .AmountFloat}}</td>
             <td class="border border-gray-200 px-4 py-2 text-center text-sm font-semibold">
-                {{if gt .Rewards.Total 0}}
-                    <span class="text-green-600">+{{.Rewards.Total}}</span>
-                {{else if lt .Rewards.Total 0}}
-                    <span class="text-red-600">{{.Rewards.Total}}</span>
+                {{if gt .TotalRewards 0}}
+                    <span class="text-green-600">+{{.TotalRewards}}</span>
+                {{else if lt .TotalRewards 0}}
+                    <span class="text-red-600">{{.TotalRewards}}</span>
                 {{else}}
                     <span class="text-gray-400">0</span>
                 {{end}}
@@ -41,7 +47,7 @@
         </tr>
         {{else}}
         <tr>
-            <td colspan="6" class="text-center p-4 text-gray-500">No transactions found.</td>
+            <td colspan="{{ if $hasName }}6{{ else }}5{{ end }}" class="text-center p-4 text-gray-500">No transactions found.</td>
         </tr>
         {{end}}
     </tbody>

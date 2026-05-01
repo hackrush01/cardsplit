@@ -113,15 +113,16 @@ func createSchema(db *sql.DB) {
 	CREATE TABLE IF NOT EXISTS transactions (
 		card_type TEXT NOT NULL,
 		statement_date DATE NOT NULL,
-		transaction_timestamp DATETIME NOT NULL,
-		actual_transaction_timestamp DATETIME NOT NULL,
+		key_timestamp DATETIME NOT NULL,
 		username TEXT,
+		transaction_timestamp DATETIME NOT NULL,
 		card_holder_name TEXT NOT NULL,
 		description TEXT NOT NULL,
 		amount INTEGER NOT NULL,
-		rewards INTEGER DEFAULT 0,
+		base_reward_value INTEGER DEFAULT 0,
+		reward_multiplier INTEGER DEFAULT 0,
 		is_manual BOOLEAN DEFAULT 0,
-		PRIMARY KEY (card_type, statement_date, transaction_timestamp),
+		PRIMARY KEY (card_type, statement_date, key_timestamp),
 		FOREIGN KEY (card_type, statement_date) REFERENCES statements(card_type, statement_date) ON DELETE CASCADE
 		FOREIGN KEY (username) REFERENCES users(username) ON DELETE SET NULL
 	);`

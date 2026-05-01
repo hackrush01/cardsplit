@@ -29,14 +29,14 @@ Purchase~|~DEF~|~01/01/2024 10:00:00~|~Groceries~|~150.00~|~Dr~|~`
 		t.Fatalf("expected 2 transactions, got %d", len(stmt.Transactions))
 	}
 
-	firstActual := stmt.Transactions[0].ActualTimestamp
-	secondActual := stmt.Transactions[1].ActualTimestamp
+	firstActual := stmt.Transactions[0].TxnTimestamp
+	secondActual := stmt.Transactions[1].TxnTimestamp
 	if !secondActual.Equal(firstActual) {
 		t.Fatalf("expected actual timestamps to remain equal; got %v and %v", firstActual, secondActual)
 	}
 
-	firstShifted := stmt.Transactions[0].ShiftedTimestamp
-	secondShifted := stmt.Transactions[1].ShiftedTimestamp
+	firstShifted := stmt.Transactions[0].KeyTimestamp
+	secondShifted := stmt.Transactions[1].KeyTimestamp
 	if !secondShifted.Equal(firstShifted.Add(time.Second)) {
 		t.Fatalf("expected second shifted timestamp to be shifted by one second; got %v and %v", firstShifted, secondShifted)
 	}

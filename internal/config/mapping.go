@@ -79,19 +79,19 @@ func (cm *CardMapping) addMapping(username string, card models.CardConfig) error
 	return nil
 }
 
-// GetUserDetails retrieves the username and card suffix based on cardType and csvName.
-func (cm *CardMapping) GetUserDetails(cardType, csvName string) (string, string, error) {
-	if cardType == "" || csvName == "" {
-		return "", "", fmt.Errorf("cardType and csvName must be provided")
+// GetUserDetails retrieves the username and card suffix based on cardType and cardHolderName.
+func (cm *CardMapping) GetUserDetails(cardType, cardHolderName string) (string, string, error) {
+	if cardType == "" || cardHolderName == "" {
+		return "", "", fmt.Errorf("cardType and cardHolderName must be provided")
 	}
 
 	if cardMap, exists := cm.mapping[cardType]; exists {
-		if userConfig, exists := cardMap[csvName]; exists {
+		if userConfig, exists := cardMap[cardHolderName]; exists {
 			return userConfig.Username, userConfig.Suffix, nil
 		}
 	}
 
-	return "", "", fmt.Errorf("no mapping found for cardType %q and csvName %q", cardType, csvName)
+	return "", "", fmt.Errorf("no mapping found for cardType %q and cardHolderName %q", cardType, cardHolderName)
 }
 
 // Username returns the list of all configured usernames, including the injected "Admin" user.
