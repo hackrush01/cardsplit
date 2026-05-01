@@ -53,7 +53,7 @@ func StatementDates(db *sql.DB, username string, cardType string) ([]string, err
 // TransactionsByStatement retrieves all transactions for a given user's statement.
 func TransactionsByStatement(db *sql.DB, username string, cardType string, statementDate string) ([]models.Transaction, error) {
 	rows, err := db.Query(`
-		SELECT card_type, transaction_timestamp, description, amount, base_reward_value, reward_multiplier
+		SELECT card_type, transaction_timestamp, description, amount, base_reward_value, reward_multiplier, is_payment
 		FROM transactions 
 		WHERE username = ? AND card_type = ? AND statement_date = ? 
 		ORDER BY transaction_timestamp ASC`,
@@ -73,6 +73,7 @@ func TransactionsByStatement(db *sql.DB, username string, cardType string, state
 			&t.Amount,
 			&t.BaseRewardValue,
 			&t.RewardMultiplier,
+			&t.IsPayment,
 		)
 		if err != nil {
 			return nil, err

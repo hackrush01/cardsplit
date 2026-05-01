@@ -13,6 +13,7 @@ type Transaction struct {
 	Amount           int
 	BaseRewardValue  int
 	RewardMultiplier int
+	IsPayment        bool
 }
 
 // AmountFloat is a helper method used exclusively by the UI to display the float value

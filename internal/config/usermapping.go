@@ -8,22 +8,22 @@ import (
 	"github.com/hackrush01/cardsplit/internal/models"
 )
 
-// CardMapping holds the parsed mapping data for efficient lookups.
-type CardMapping struct {
-	mapping   map[string]map[string]models.UserConfig // cardType -> csvName -> UserConfig
+// UserCardMapping holds the parsed mapping data for efficient lookups.
+type UserCardMapping struct {
+	mapping   map[string]map[string]models.UserConfig // cardType -> cardHolderName -> UserConfig
 	usernames []string
 }
 
 func MappingFilePath() string {
 	p := os.Getenv("CONFIG_PATH")
 	if p == "" {
-		p = "./configs/card_mapping.json"
+		p = "./configs/user_card_mapping.json"
 	}
 	return p
 }
 
-// LoadCardMapping reads the JSON file and initializes the CardMapping structure.
-func LoadCardMapping(filepath string) (*CardMapping, error) {
+// LoadCardMapping reads the JSON file and initializes the UserCardMapping structure.
+func LoadCardMapping(filepath string) (*UserCardMapping, error) {
 	bytes, err := os.ReadFile(filepath)
 	if err != nil {
 		return nil, fmt.Errorf("read mapping file at %v: %w", filepath, err)
@@ -34,7 +34,7 @@ func LoadCardMapping(filepath string) (*CardMapping, error) {
 		return nil, fmt.Errorf("unmarshal mapping file: %w", err)
 	}
 
-	cm := &CardMapping{
+	cm := &UserCardMapping{
 		mapping: make(map[string]map[string]models.UserConfig),
 	}
 
@@ -55,23 +55,23 @@ func LoadCardMapping(filepath string) (*CardMapping, error) {
 	return cm, nil
 }
 
-func (cm *CardMapping) addMapping(username string, card models.CardConfig) error {
-	if card.CSVName == "" {
-		return fmt.Errorf("csv_name is required for user %q", username)
+func (cm *UserCardMapping) addMapping(username string, card models.CardConfig) error {
+	if card.CardHolderName == "" {
+		return fmt.Errorf("card_holder_name is required for user %q", username)
 	}
 
 	if _, exists := cm.mapping[card.CardType]; !exists {
 		cm.mapping[card.CardType] = make(map[string]models.UserConfig)
 	}
 
-	if existing, exists := cm.mapping[card.CardType][card.CSVName]; exists {
+	if existing, exists := cm.mapping[card.CardType][card.CardHolderName]; exists {
 		if existing.Username != username {
-			return fmt.Errorf("csv_name %q is already mapped to a different user", card.CSVName)
+			return fmt.Errorf("card_holder_name %q is already mapped to a different user", card.CardHolderName)
 		}
 		return nil
 	}
 
-	cm.mapping[card.CardType][card.CSVName] = models.UserConfig{
+	cm.mapping[card.CardType][card.CardHolderName] = models.UserConfig{
 		Username: username,
 		CardType: card.CardType,
 		Suffix:   card.Suffix,
@@ -80,7 +80,7 @@ func (cm *CardMapping) addMapping(username string, card models.CardConfig) error
 }
 
 // GetUserDetails retrieves the username and card suffix based on cardType and cardHolderName.
-func (cm *CardMapping) GetUserDetails(cardType, cardHolderName string) (string, string, error) {
+func (cm *UserCardMapping) GetUserDetails(cardType, cardHolderName string) (string, string, error) {
 	if cardType == "" || cardHolderName == "" {
 		return "", "", fmt.Errorf("cardType and cardHolderName must be provided")
 	}
@@ -95,7 +95,7 @@ func (cm *CardMapping) GetUserDetails(cardType, cardHolderName string) (string, 
 }
 
 // Username returns the list of all configured usernames, including the injected "Admin" user.
-func (cm *CardMapping) Usernames() []string {
+func (cm *UserCardMapping) Usernames() []string {
 	return cm.usernames
 }
 

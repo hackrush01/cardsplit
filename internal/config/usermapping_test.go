@@ -6,12 +6,12 @@ import (
 	"testing"
 )
 
-func TestLoadCardMapping_AllowsDuplicateCSVNameForSameUser(t *testing.T) {
+func TestLoadCardMapping_AllowsDuplicateCardHolderNameForSameUser(t *testing.T) {
 	contents := `{
 	  "users": {
 	    "alice": [
-	      {"card_type": "Infinia", "suffix": "1234", "csv_name": "Alice"},
-	      {"card_type": "Emeralde", "suffix": "9876", "csv_name": "Alice"}
+	      {"card_type": "Infinia", "suffix": "1234", "card_holder_name": "Alice"},
+	      {"card_type": "Emeralde", "suffix": "9876", "card_holder_name": "Alice"}
 	    ]
 	  }
 	}`
@@ -35,14 +35,14 @@ func TestLoadCardMapping_AllowsDuplicateCSVNameForSameUser(t *testing.T) {
 	}
 }
 
-func TestLoadCardMapping_DuplicateCSVNameAcrossUsersFails(t *testing.T) {
+func TestLoadCardMapping_DuplicateCardHolderNameAcrossUsersFails(t *testing.T) {
 	contents := `{
 	  "users": {
 	    "alice": [
-	      {"card_type": "Infinia", "suffix": "1234", "csv_name": "Alice"}
+	      {"card_type": "Infinia", "suffix": "1234", "card_holder_name": "Alice"}
 	    ],
 	    "bob": [
-	      {"card_type": "Infinia", "suffix": "5678", "csv_name": "Alice"}
+	      {"card_type": "Infinia", "suffix": "5678", "card_holder_name": "Alice"}
 	    ]
 	  }
 	}`
@@ -53,7 +53,7 @@ func TestLoadCardMapping_DuplicateCSVNameAcrossUsersFails(t *testing.T) {
 	defer os.Remove(tmpFile)
 
 	if _, err := LoadCardMapping(tmpFile); err == nil {
-		t.Fatal("expected error for duplicate csv_name across users")
+		t.Fatal("expected error for duplicate card_holder_name across users")
 	}
 }
 
@@ -61,7 +61,7 @@ func TestGetUserDetails(t *testing.T) {
 	contents := `{
 	  "users": {
 	    "alice": [
-	      {"card_type": "Infinia", "suffix": "1234", "csv_name": "Alice"}
+	      {"card_type": "Infinia", "suffix": "1234", "card_holder_name": "Alice"}
 	    ]
 	  }
 	}`

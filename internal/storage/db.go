@@ -122,6 +122,7 @@ func createSchema(db *sql.DB) {
 		base_reward_value INTEGER DEFAULT 0,
 		reward_multiplier INTEGER DEFAULT 0,
 		is_manual BOOLEAN DEFAULT 0,
+		is_payment BOOLEAN DEFAULT 0,
 		PRIMARY KEY (card_type, statement_date, key_timestamp),
 		FOREIGN KEY (card_type, statement_date) REFERENCES statements(card_type, statement_date) ON DELETE CASCADE
 		FOREIGN KEY (username) REFERENCES users(username) ON DELETE SET NULL

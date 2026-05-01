@@ -4,19 +4,19 @@
       {
         "card_type": "Infinia",
         "suffix": "1234",
-        "csv_name": "Primary"
+        "card_holder_name": "Primary"
       },
       {
         "card_type": "Emeralde",
         "suffix": "9876",
-        "csv_name": "Alice S"
+        "card_holder_name": "Alice S"
       }
     ],
     "Bob": [
       {
         "card_type": "Infinia",
         "suffix": "5678",
-        "csv_name": "Addon-1"
+        "card_holder_name": "Addon-1"
       }
     ]
   }

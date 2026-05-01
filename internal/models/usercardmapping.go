@@ -2,9 +2,9 @@ package models
 
 // CardConfig represents the JSON fields for a single card entry.
 type CardConfig struct {
-	CardType string `json:"card_type"`
-	Suffix   string `json:"suffix"`
-	CSVName  string `json:"csv_name"`
+	CardType       string `json:"card_type"`
+	Suffix         string `json:"suffix"`
+	CardHolderName string `json:"card_holder_name"`
 }
 
 // UserConfig represents the flattened lookup data used by the app.
