@@ -94,6 +94,20 @@ func (cm *UserCardMapping) GetUserDetails(cardType, cardHolderName string) (stri
 	return "", "", fmt.Errorf("no mapping found for cardType %q and cardHolderName %q", cardType, cardHolderName)
 }
 
+// GetCardHolderName retrieves the primary card holder name associated with a username and card type.
+// This is useful for creating manual transactions where only the username is known.
+func (cm *UserCardMapping) GetCardHolderName(cardType, username string) (string, error) {
+	if cardMap, exists := cm.mapping[cardType]; exists {
+		for chn, config := range cardMap {
+			if config.Username == username {
+				return chn, nil
+			}
+		}
+	}
+
+	return "", fmt.Errorf("no card holder name found for user %q on card %q", username, cardType)
+}
+
 // Username returns the list of all configured usernames, including the injected "Admin" user.
 func (cm *UserCardMapping) Usernames() []string {
 	return cm.usernames

@@ -56,8 +56,12 @@ func EnsureUsersExist(users []string, db *sql.DB) error {
 }
 
 // GetAllUsers fetches all usernames for the login dropdown.
-func GetAllUsers(db *sql.DB) ([]string, error) {
-	rows, err := db.Query(`SELECT username FROM users ORDER BY username ASC`)
+func GetAllUsers(db *sql.DB, no_admin bool) ([]string, error) {
+	query := `SELECT username FROM users ORDER BY role, username ASC`
+	if no_admin {
+		query = `SELECT username FROM users WHERE role != 'admin' ORDER BY role, username ASC`
+	}
+	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
 	}
@@ -115,6 +119,7 @@ func createSchema(db *sql.DB) {
 		statement_date DATE NOT NULL,
 		key_timestamp DATETIME NOT NULL,
 		username TEXT,
+		transaction_type TEXT NOT NULL,
 		transaction_timestamp DATETIME NOT NULL,
 		card_holder_name TEXT NOT NULL,
 		description TEXT NOT NULL,

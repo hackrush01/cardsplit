@@ -46,7 +46,7 @@
             </div>
             
             <div class="transactions-section">
-                {{ template "transactions-table" . }}
+                {{ template "transactions-table" .Transactions }}
             </div>
         {{ else }}
             <p class="text-gray-500 text-sm p-4">Please select a card and a statement date to load your transactions.</p>

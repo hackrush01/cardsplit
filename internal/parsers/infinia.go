@@ -127,7 +127,7 @@ func parseTransactions(lines []string) ([]models.Transaction, []string) {
 		}
 
 		tx := models.Transaction{
-			Type:            cols[0],
+			TxnType:         cols[0],
 			CardHolderName:  cols[1],
 			TxnTimestamp:    txnTime,
 			KeyTimestamp:    keyTime,

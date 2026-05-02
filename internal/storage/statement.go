@@ -40,15 +40,15 @@ func SaveStatement(db *sql.DB, stmt *models.Statement) error {
 		return err
 	}
 
-	// 2. Delete existing transactions for this statement (to replace them)
-	if _, err := tx.Exec("DELETE FROM transactions WHERE card_type = ? AND statement_date = ?", stmt.CardType, stmt.StatementDate.Format("2006-01-02")); err != nil {
+	// 2. Delete existing non-manual transactions for this statement (to replace them)
+	if _, err := tx.Exec("DELETE FROM transactions WHERE card_type = ? AND statement_date = ? AND is_manual = 0", stmt.CardType, stmt.StatementDate.Format("2006-01-02")); err != nil {
 		return err
 	}
 
 	// 3. Insert new transactions
 	ins, err := tx.Prepare(`
-		INSERT INTO transactions (card_type, statement_date, key_timestamp, username, transaction_timestamp, card_holder_name, description, amount, base_reward_value, reward_multiplier, is_payment)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+		INSERT INTO transactions (card_type, statement_date, key_timestamp, username, transaction_type, transaction_timestamp, card_holder_name, description, amount, base_reward_value, reward_multiplier, is_payment)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
 	if err != nil {
 		return err
 	}
@@ -60,6 +60,7 @@ func SaveStatement(db *sql.DB, stmt *models.Statement) error {
 			stmt.StatementDate.Format("2006-01-02"),
 			t.KeyTimestamp.Format("2006-01-02 15:04:05"),
 			t.Username,
+			t.TxnType,
 			t.TxnTimestamp.Format("2006-01-02 15:04:05"),
 			t.CardHolderName,
 			t.Description,

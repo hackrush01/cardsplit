@@ -1,4 +1,3 @@
-<h3 class="text-xl font-bold mb-2">Extracted Transactions</h3>
 {{if .Warnings}}
 <div class="mb-4 rounded border border-orange-300 bg-orange-50 p-4 text-orange-700">
     <strong>Warning:</strong>
@@ -9,9 +8,11 @@
     </ul>
 </div>
 {{end}}
+
 {{ define "transactions-table" }}
+{{ $txns := . }}
 {{ $hasName := false }}
-{{ range .Transactions }}{{ if .CardHolderName }}{{ $hasName = true }}{{ end }}{{ end }}
+{{ range $txns }}{{ if .CardHolderName }}{{ $hasName = true }}{{ end }}{{ end }}
 <table class="min-w-full table-auto border-collapse border border-gray-200 transaction-table">
     <thead class="bg-gray-100">
         <tr>
@@ -28,9 +29,9 @@
         </tr>
     </thead>
     <tbody>
-        {{range .Transactions}}
+        {{range $txns}}
         <tr class="hover:bg-gray-50 {{if .IsPayment}}bg-green-50{{end}}">
-            <td class="border border-gray-200 px-4 py-2">{{.Type}}</td>
+            <td class="border border-gray-200 px-4 py-2">{{.TxnType}}</td>
             <td class="border border-gray-200 px-4 py-2">{{.TxnTimestamp.Format "02 Jan 2006 15:04:05"}}</td>
             <td class="border border-gray-200 px-4 py-2">{{.Description}}</td>
             {{ if $hasName }}
@@ -58,4 +59,12 @@
 </table>
 {{ end }}
 
-{{ template "transactions-table" . }}
+{{ if .ManualTransactions }}
+<h3 class="text-xl font-bold mb-2 mt-6">Manual Adjustments</h3>
+<div class="mb-4">
+    {{ template "transactions-table" .ManualTransactions }}
+</div>
+{{ end }}
+
+<h3 class="text-xl font-bold mb-2 mt-6">Statement Transactions</h3>
+{{ template "transactions-table" .Transactions }}

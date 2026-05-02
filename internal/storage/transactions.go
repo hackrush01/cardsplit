@@ -53,7 +53,7 @@ func StatementDates(db *sql.DB, username string, cardType string) ([]string, err
 // TransactionsByStatement retrieves all transactions for a given user's statement.
 func TransactionsByStatement(db *sql.DB, username string, cardType string, statementDate string) ([]models.Transaction, error) {
 	rows, err := db.Query(`
-		SELECT card_type, transaction_timestamp, description, amount, base_reward_value, reward_multiplier, is_payment
+		SELECT transaction_type, transaction_timestamp, description, amount, base_reward_value, reward_multiplier, is_payment, is_manual
 		FROM transactions 
 		WHERE username = ? AND card_type = ? AND statement_date = ? 
 		ORDER BY transaction_timestamp ASC`,
@@ -67,9 +67,44 @@ func TransactionsByStatement(db *sql.DB, username string, cardType string, state
 	for rows.Next() {
 		var t models.Transaction
 		err := rows.Scan(
-			&t.Type,
+			&t.TxnType,
 			&t.TxnTimestamp,
 			&t.Description,
+			&t.Amount,
+			&t.BaseRewardValue,
+			&t.RewardMultiplier,
+			&t.IsPayment,
+			&t.IsManual,
+		)
+		if err != nil {
+			return nil, err
+		}
+		txs = append(txs, t)
+	}
+	return txs, nil
+}
+
+// GetTransactionsByType fetches manual adjustments for a specific statement.
+func GetTransactionsByType(db *sql.DB, cardType string, statementDate string, is_manual bool) ([]models.Transaction, error) {
+	rows, err := db.Query(`
+		SELECT transaction_type, transaction_timestamp, description, card_holder_name, amount, base_reward_value, reward_multiplier, is_payment
+		FROM transactions
+		WHERE card_type = ? AND statement_date = ? AND is_manual = ?
+		ORDER BY transaction_timestamp DESC`,
+		cardType, statementDate, is_manual)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var txs []models.Transaction
+	for rows.Next() {
+		var t models.Transaction
+		err := rows.Scan(
+			&t.TxnType,
+			&t.TxnTimestamp,
+			&t.Description,
+			&t.CardHolderName,
 			&t.Amount,
 			&t.BaseRewardValue,
 			&t.RewardMultiplier,
@@ -81,4 +116,22 @@ func TransactionsByStatement(db *sql.DB, username string, cardType string, state
 		txs = append(txs, t)
 	}
 	return txs, nil
+}
+
+// AddManualTransaction inserts a manually created transaction.
+func AddManualTransaction(db *sql.DB, cardType, statementDate string, t models.Transaction) error {
+	_, err := db.Exec(`
+		INSERT INTO transactions (card_type, statement_date, key_timestamp, username, transaction_type, transaction_timestamp, card_holder_name, description, amount, is_manual)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
+		cardType,
+		statementDate,
+		t.KeyTimestamp.Format("2006-01-02 15:04:05"),
+		t.Username,
+		t.TxnType,
+		t.TxnTimestamp.Format("2006-01-02 15:04:05"),
+		t.CardHolderName,
+		t.Description,
+		t.Amount,
+	)
+	return err
 }

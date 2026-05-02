@@ -4,9 +4,10 @@ import "time"
 
 // Transaction represents a standardized ledger entry, regardless of the bank.
 type Transaction struct {
-	Type             string
+	CardType         string
 	KeyTimestamp     time.Time // key timestamp is used for storage uniqueness
 	Username         string
+	TxnType          string
 	TxnTimestamp     time.Time // real transaction timestamp
 	CardHolderName   string
 	Description      string
@@ -14,6 +15,7 @@ type Transaction struct {
 	BaseRewardValue  int
 	RewardMultiplier int
 	IsPayment        bool
+	IsManual         bool
 }
 
 // AmountFloat is a helper method used exclusively by the UI to display the float value

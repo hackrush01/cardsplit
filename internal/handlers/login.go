@@ -25,7 +25,7 @@ func sendHTMXError(w http.ResponseWriter, msg string) {
 
 func RenderLogin(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		users, err := storage.GetAllUsers(db)
+		users, err := storage.GetAllUsers(db, false)
 		if err != nil {
 			http.Error(w, "Load users", http.StatusInternalServerError)
 			return
