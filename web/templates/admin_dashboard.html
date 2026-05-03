@@ -13,6 +13,39 @@
     <div class="max-w-4xl mx-auto bg-white shadow-md rounded-lg p-6">
         <h1 class="text-2xl font-bold mb-4">💳 CardSplit Dashboard</h1>
         
+        <!-- Existing Statements Section -->
+        <div class="mb-8 p-4 border border-solid border-green-300 rounded bg-green-50">
+            <h2 class="text-lg font-semibold mb-2">📋 Select Existing Statement</h2>
+            <form hx-post="/load-statement" 
+                  hx-target="#transaction-results" 
+                  class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-2">Card Type</label>
+                    <select name="card_type" 
+                            hx-get="/statement-dates" 
+                            hx-target="#statement-date" 
+                            hx-trigger="change, load"
+                            class="w-full border rounded px-2 py-2 text-sm bg-white">
+                        <option value="">Select Card Type...</option>
+                        <option value="Infinia">Infinia</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-2">Statement Date</label>
+                    <select id="statement-date" name="statement_date" required class="w-full border rounded px-2 py-2 text-sm bg-white">
+                        <option value="">Select Statement Date...</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <button type="submit" class="w-full bg-green-600 text-white px-4 py-2 rounded text-sm font-semibold hover:bg-green-700 transition">
+                        Load Statement
+                    </button>
+                </div>
+            </form>
+        </div>
+        
         <!-- The HTMX Upload Form -->
         <div class="mb-8 p-4 border border-dashed border-gray-300 rounded bg-gray-50">
             <h2 class="text-lg font-semibold mb-2">Upload HDFC Infinia Statement</h2>

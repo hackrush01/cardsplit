@@ -7,14 +7,32 @@
         "(?i)AUTOPAY RETURNED"
       ],
       "rewards": {
-        "3": [],
-        "5": [
-          "(?i)GYFTR VIA SMARTBUY",
-          "(?i)SB GI FLIGHT",
-          "(?i)PHARMEASY VIA SMARTBUY",
-          "(?i)SB REDBUS"
+        "10": [
+          "(?i)CT HOTEL VIA SMARTBUY BANGALORE",
+          "(?i)SB MMT HOTEL BANGALORE",
+          "(?i)PHARMEASY VIA SMARTBUY MUMBAI",
+          "(?i)JOCKEY VIA SMARTBUY",
+          "(?i)IGP VIA SMARTBUY"
         ],
-        "10": []
+        "5": [
+          "(?i)SB GI FLIGHT",
+          "(?i)CT FLIGHT VIA SMARTBUY",
+          "(?i)GYFTR VIA SMARTBUY NEW DELHI",
+          "(?i)GYFTR COM VIA SMARTBUY GURGAON",
+          "(?i)GYFTR VIA SMARTBUY GURGAON",
+          "(?i)MYNTRA VIA SMARTBUY GURGAON",
+          "(?i)NYKAA VIA SMARTBUY",
+          "(?i)SB REDBUS BANGALORE",
+          "(?i)IMAGINE VIA SMARTBUY",
+          "(?i)SB MMT HOLIDAY",
+          "(?i)ZOOM CAR VIA SMARTBUY",
+          "(?i)DRIVADO VIA SMARTBUY",
+          "(?i)ADANI ONE VIA SMARTBUY"
+        ],
+        "3": [
+          "(?i)CONFIRMTKT VIA SMARTBUY",
+          "(?i)IRCTC VIA SMARTBUY"
+        ]
       }
     }
   }

@@ -56,7 +56,7 @@ func TransactionsByStatement(db *sql.DB, username string, cardType string, state
 		SELECT transaction_type, transaction_timestamp, description, amount, base_reward_value, reward_multiplier, is_payment, is_manual
 		FROM transactions 
 		WHERE username = ? AND card_type = ? AND statement_date = ? 
-		ORDER BY transaction_timestamp ASC`,
+		ORDER BY is_manual DESC,transaction_timestamp ASC`,
 		username, cardType, statementDate)
 	if err != nil {
 		return nil, err
