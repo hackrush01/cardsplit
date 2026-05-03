@@ -3,13 +3,25 @@ package storage
 import (
 	"database/sql"
 	"log"
+	"os"
+	"path/filepath"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
 // InitDB opens the SQLite connection, applies best-practice PRAGMAs, and creates tables.
-func InitDB(filepath string) *sql.DB {
-	db, err := sql.Open("sqlite3", filepath)
+func InitDB() *sql.DB {
+	dbPath := os.Getenv("DB_PATH")
+	if dbPath == "" {
+		dbPath = "./storage/cardsplit.db"
+	}
+
+	dbDir := filepath.Dir(dbPath)
+	if err := os.MkdirAll(dbDir, os.ModePerm); err != nil {
+		log.Fatalf("Create DB directory: %v", err)
+	}
+
+	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
 		log.Fatalf("Open database: %v", err)
 	}

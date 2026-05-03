@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/hackrush01/cardsplit/internal/api"
 	"github.com/hackrush01/cardsplit/internal/config"
@@ -15,7 +16,7 @@ import (
 func main() {
 	log.Println("Starting CardSplit Server...")
 
-	db := storage.InitDB("./cardsplit.db")
+	db := storage.InitDB()
 	defer db.Close()
 
 	config.LoadCardRules(config.RuleFilePath())
@@ -43,10 +44,13 @@ func main() {
 		fmt.Fprintln(w, "CardSplit is running smoothly!")
 	})
 
-	port := ":8080"
-	log.Printf("Server listening on %s\n", port)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	log.Printf("Server listening on 0.0.0.0:%s\n", port)
 
-	if err := http.ListenAndServe(port, mux); err != nil {
+	if err := http.ListenAndServe("0.0.0.0:"+port, mux); err != nil {
 		log.Fatalf("Server failed: %v", err)
 	}
 }
