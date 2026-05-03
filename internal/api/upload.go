@@ -85,6 +85,14 @@ func UploadHandler(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
+		totalRewards := 0
+		for _, t := range csvTxns {
+			totalRewards += t.TotalRewards()
+		}
+		for _, t := range manualTxns {
+			totalRewards += t.TotalRewards()
+		}
+
 		data := struct {
 			Transactions       []models.Transaction
 			Warnings           []string
@@ -92,6 +100,7 @@ func UploadHandler(db *sql.DB) http.HandlerFunc {
 			Users              []string
 			CardType           string
 			StatementDate      string
+			TotalRewards       int
 		}{
 			Transactions:       csvTxns,
 			Warnings:           stmt.Warnings,
@@ -99,6 +108,7 @@ func UploadHandler(db *sql.DB) http.HandlerFunc {
 			Users:              users,
 			CardType:           stmt.CardType,
 			StatementDate:      stmt.StatementDate.Format("2006-01-02"),
+			TotalRewards:       totalRewards,
 		}
 
 		if err := tmpl.Execute(w, data); err != nil {

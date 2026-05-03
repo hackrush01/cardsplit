@@ -47,6 +47,14 @@ func LoadStatementHandler(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
+		totalRewards := 0
+		for _, t := range csvTxns {
+			totalRewards += t.TotalRewards()
+		}
+		for _, t := range manualTxns {
+			totalRewards += t.TotalRewards()
+		}
+
 		data := struct {
 			Transactions       []models.Transaction
 			Warnings           []string
@@ -54,7 +62,8 @@ func LoadStatementHandler(db *sql.DB) http.HandlerFunc {
 			Users              []string
 			CardType           string
 			StatementDate      string
-		}{csvTxns, nil, manualTxns, users, cardType, statementDate}
+			TotalRewards       int
+		}{csvTxns, nil, manualTxns, users, cardType, statementDate, totalRewards}
 
 		// Execute the transactions template
 		if err := tmpl.Execute(w, data); err != nil {

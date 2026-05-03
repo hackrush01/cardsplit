@@ -9,6 +9,11 @@
 </div>
 {{end}}
 
+<div class="mb-6 p-4 md:p-6 border border-blue-200 rounded-2xl bg-blue-50/50">
+    <h2 class="text-sm font-bold uppercase text-blue-600 mb-1">Rewards Summary</h2>
+    <h3 class="text-3xl font-extrabold text-gray-900">{{.TotalRewards}} Points</h3>
+</div>
+
 {{ define "transactions-table" }}
 {{ $txns := . }}
 {{ $hasName := false }}
