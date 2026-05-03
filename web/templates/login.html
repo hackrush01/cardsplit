@@ -7,18 +7,17 @@
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50 flex items-center justify-center h-screen">
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
 
-    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm border border-gray-100">
-        <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Welcome Back</h2>
+    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-sm border border-gray-100">
+        <h2 class="text-3xl font-extrabold mb-8 text-center text-gray-800 tracking-tight">💳 CardSplit</h2>
         
-        <!-- HTMX Form: Posts to /login, targets the message div on response -->
-        <form hx-post="/login" hx-target="#login-message" hx-swap="innerHTML">
+        <form hx-post="/login" hx-target="#login-message" hx-swap="innerHTML" class="space-y-6">
             
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-semibold mb-2" for="username">Select User</label>
+            <div>
+                <label class="block text-gray-600 text-xs font-bold uppercase mb-2" for="username">Select User</label>
                 <div class="relative">
-                    <select id="username" name="username" class="w-full px-4 py-2 border border-gray-300 rounded-lg appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white">
+                    <select id="username" name="username" class="w-full px-4 py-3 border border-gray-300 rounded-xl appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm transition">
                         <option value="" disabled selected>Choose an account</option>
                         {{range .Users}}
                             <option value="{{.}}">{{.}}</option>
@@ -27,18 +26,18 @@
                 </div>
             </div>
 
-            <div class="mb-6">
-                <label class="block text-gray-700 text-sm font-semibold mb-2" for="password">Password</label>
+            <div>
+                <label class="block text-gray-600 text-xs font-bold uppercase mb-2" for="password">Password</label>
                 <input type="password" id="password" name="password" required 
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm" 
                     placeholder="Password">
                 <p class="text-xs text-gray-500 mt-2">If this is your first time logging in, the password you enter will be saved as your permanent password.</p>
             </div>
 
             <!-- Error messages from the backend will be injected here -->
-            <div id="login-message" class="mb-4 text-center empty:hidden"></div>
+            <div id="login-message" class="text-center empty:hidden"></div>
 
-            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200">
+            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-blue-700 shadow-md transition duration-200">
                 Sign In
             </button>
         </form>
