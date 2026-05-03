@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/hackrush01/cardsplit/internal/models"
 	"github.com/hackrush01/cardsplit/internal/storage"
 )
 
@@ -27,15 +28,9 @@ func LoadStatementHandler(db *sql.DB) http.HandlerFunc {
 		}
 
 		// Get transactions for this statement
-		csvTxns, err := storage.GetTransactionsByType(db, cardType, statementDate, false)
+		csvTxns, manualTxns, err := storage.GetStatementTransactions(db, cardType, statementDate)
 		if err != nil {
 			http.Error(w, "Load transactions: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		manualTxns, err := storage.GetTransactionsByType(db, cardType, statementDate, true)
-		if err != nil {
-			http.Error(w, "Load adjustments: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -53,9 +48,9 @@ func LoadStatementHandler(db *sql.DB) http.HandlerFunc {
 		}
 
 		data := struct {
-			Transactions       interface{}
+			Transactions       []models.Transaction
 			Warnings           []string
-			ManualTransactions interface{}
+			ManualTransactions []models.Transaction
 			Users              []string
 			CardType           string
 			StatementDate      string

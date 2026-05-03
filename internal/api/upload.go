@@ -40,6 +40,11 @@ func UploadHandler(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
+		if len(stmt.Transactions) == 0 {
+			http.Error(w, "No transactions found in the uploaded file", http.StatusBadRequest)
+			return
+		}
+
 		for i, txn := range stmt.Transactions {
 			u, _, err := cardMapping.GetUserDetails("Infinia", txn.CardHolderName)
 			if err == nil {
@@ -50,14 +55,21 @@ func UploadHandler(db *sql.DB) http.HandlerFunc {
 			}
 		}
 
-		if err := storage.SaveStatement(db, stmt); err != nil {
+		savedCount, err := storage.SaveStatement(db, stmt)
+		if err != nil {
 			http.Error(w, "Failed to save statement: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		manualTxns, err := storage.GetTransactionsByType(db, stmt.CardType, stmt.StatementDate.Format("2006-01-02"), true)
+		if int(savedCount) != len(stmt.Transactions) {
+			http.Error(w, fmt.Sprintf("Integrity check failed: parsed %d transactions but saved %d", len(stmt.Transactions), savedCount), http.StatusInternalServerError)
+			return
+		}
+
+		// Load transactions back from DB to verify persistence and provide source-of-truth for UI
+		csvTxns, manualTxns, err := storage.GetStatementTransactions(db, stmt.CardType, stmt.StatementDate.Format("2006-01-02"))
 		if err != nil {
-			http.Error(w, "Failed to load manual adjustments", http.StatusInternalServerError)
+			http.Error(w, "Failed to load transactions: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -81,7 +93,7 @@ func UploadHandler(db *sql.DB) http.HandlerFunc {
 			CardType           string
 			StatementDate      string
 		}{
-			Transactions:       stmt.Transactions,
+			Transactions:       csvTxns,
 			Warnings:           stmt.Warnings,
 			ManualTransactions: manualTxns,
 			Users:              users,

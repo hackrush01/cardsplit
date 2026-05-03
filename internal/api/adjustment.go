@@ -60,14 +60,9 @@ func AdjustmentHandler(db *sql.DB) http.HandlerFunc {
 		}
 
 		// Reload everything to re-render the fragment
-		csvTxns, err := storage.GetTransactionsByType(db, cardType, statementDate, false)
+		csvTxns, manualTxns, err := storage.GetStatementTransactions(db, cardType, statementDate)
 		if err != nil {
 			http.Error(w, "Load transactions", http.StatusInternalServerError)
-			return
-		}
-		manualTxns, err := storage.GetTransactionsByType(db, cardType, statementDate, true)
-		if err != nil {
-			http.Error(w, "Load adjustments", http.StatusInternalServerError)
 			return
 		}
 		users, err := storage.GetAllUsers(db, true)

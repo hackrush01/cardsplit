@@ -84,23 +84,23 @@ func TransactionsByStatement(db *sql.DB, username string, cardType string, state
 	return txs, nil
 }
 
-// GetTransactionsByType fetches manual adjustments for a specific statement.
-func GetTransactionsByType(db *sql.DB, cardType string, statementDate string, is_manual bool) ([]models.Transaction, error) {
+// GetStatementTransactions fetches both CSV and manual transactions for a specific statement in one query.
+func GetStatementTransactions(db *sql.DB, cardType string, statementDate string) (csv, manual []models.Transaction, err error) {
 	rows, err := db.Query(`
-		SELECT transaction_type, transaction_timestamp, description, card_holder_name, amount, base_reward_value, reward_multiplier, is_payment
+		SELECT username, transaction_type, transaction_timestamp, description, card_holder_name, amount, base_reward_value, reward_multiplier, is_payment, is_manual
 		FROM transactions
-		WHERE card_type = ? AND statement_date = ? AND is_manual = ?
+		WHERE card_type = ? AND statement_date = ?
 		ORDER BY transaction_timestamp DESC`,
-		cardType, statementDate, is_manual)
+		cardType, statementDate)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	defer rows.Close()
 
-	var txs []models.Transaction
 	for rows.Next() {
 		var t models.Transaction
-		err := rows.Scan(
+		if err := rows.Scan(
+			&t.Username,
 			&t.TxnType,
 			&t.TxnTimestamp,
 			&t.Description,
@@ -109,13 +109,17 @@ func GetTransactionsByType(db *sql.DB, cardType string, statementDate string, is
 			&t.BaseRewardValue,
 			&t.RewardMultiplier,
 			&t.IsPayment,
-		)
-		if err != nil {
-			return nil, err
+			&t.IsManual,
+		); err != nil {
+			return nil, nil, err
 		}
-		txs = append(txs, t)
+		if t.IsManual {
+			manual = append(manual, t)
+		} else {
+			csv = append(csv, t)
+		}
 	}
-	return txs, nil
+	return csv, manual, nil
 }
 
 // AddManualTransaction inserts a manually created transaction.

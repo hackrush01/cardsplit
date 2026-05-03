@@ -8,16 +8,16 @@ import (
 )
 
 // SaveStatement atomically saves the statement metadata and all its transactions
-func SaveStatement(db *sql.DB, stmt *models.Statement) error {
+func SaveStatement(db *sql.DB, stmt *models.Statement) (int64, error) {
 	tx, err := db.Begin()
 	if err != nil {
-		return err
+		return 0, err
 	}
 	defer tx.Rollback()
 
 	warningsJSON, err := json.Marshal(stmt.Warnings)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	// 1. Insert or Update the statement record
@@ -37,25 +37,26 @@ func SaveStatement(db *sql.DB, stmt *models.Statement) error {
 		stmt.MinAmountDue,
 		string(warningsJSON))
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	// 2. Delete existing non-manual transactions for this statement (to replace them)
 	if _, err := tx.Exec("DELETE FROM transactions WHERE card_type = ? AND statement_date = ? AND is_manual = 0", stmt.CardType, stmt.StatementDate.Format("2006-01-02")); err != nil {
-		return err
+		return 0, err
 	}
 
 	// 3. Insert new transactions
+	var rowsInserted int64
 	ins, err := tx.Prepare(`
 		INSERT INTO transactions (card_type, statement_date, key_timestamp, username, transaction_type, transaction_timestamp, card_holder_name, description, amount, base_reward_value, reward_multiplier, is_payment)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	defer ins.Close()
 
 	for _, t := range stmt.Transactions {
-		_, err := ins.Exec(
+		res, err := ins.Exec(
 			stmt.CardType,
 			stmt.StatementDate.Format("2006-01-02"),
 			t.KeyTimestamp.Format("2006-01-02 15:04:05"),
@@ -70,8 +71,10 @@ func SaveStatement(db *sql.DB, stmt *models.Statement) error {
 			t.IsPayment,
 		)
 		if err != nil {
-			return err
+			return 0, err
 		}
+		affected, _ := res.RowsAffected()
+		rowsInserted += affected
 	}
-	return tx.Commit()
+	return rowsInserted, tx.Commit()
 }
