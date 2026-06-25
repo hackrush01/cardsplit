@@ -99,6 +99,37 @@ func GetUserRole(db *sql.DB, username string) string {
 	return role
 }
 
+type UserStatus struct {
+	Username    string
+	HasPassword bool
+}
+
+// GetAllUserStatuses fetches all users and whether they have a password set.
+func GetAllUserStatuses(db *sql.DB) ([]UserStatus, error) {
+	query := `SELECT username, password_hash IS NOT NULL AND password_hash != '' FROM users ORDER BY role, username ASC`
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []UserStatus
+	for rows.Next() {
+		var u UserStatus
+		if err := rows.Scan(&u.Username, &u.HasPassword); err != nil {
+			return nil, err
+		}
+		users = append(users, u)
+	}
+	return users, nil
+}
+
+// ResetUserPassword clears a user's password so they can set a new one on their next login.
+func ResetUserPassword(db *sql.DB, username string) error {
+	_, err := db.Exec("UPDATE users SET password_hash = NULL WHERE username = ?", username)
+	return err
+}
+
 func createSchema(db *sql.DB) {
 	schema := `
 	CREATE TABLE IF NOT EXISTS users (

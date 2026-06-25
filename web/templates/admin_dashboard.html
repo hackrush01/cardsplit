@@ -62,6 +62,50 @@
         <!-- Manual Adjustment Form (Populated via OOB swap after upload) -->
         <div id="adjustment-form-container"></div>
 
+        <!-- User Management Section -->
+        <div class="mb-8 p-4 md:p-6 border border-purple-200 rounded-2xl bg-purple-50/50">
+            <h2 class="text-lg font-bold mb-4 text-purple-800">👥 User Management</h2>
+            <div class="overflow-x-auto bg-white rounded-lg shadow-sm border border-gray-200">
+                <table class="min-w-full text-left text-sm whitespace-nowrap">
+                    <thead class="uppercase tracking-wider border-b-2 border-gray-200 bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 border-x border-gray-200 font-bold text-gray-600">Username</th>
+                            <th scope="col" class="px-6 py-3 border-x border-gray-200 font-bold text-gray-600">Password Status</th>
+                            <th scope="col" class="px-6 py-3 border-x border-gray-200 font-bold text-gray-600">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{ range .Users }}
+                        <tr class="border-b border-gray-200 hover:bg-gray-50 transition">
+                            <td class="px-6 py-4 border-x border-gray-200">{{ .Username }}</td>
+                            <td class="px-6 py-4 border-x border-gray-200" id="password-status-{{ .Username }}">
+                                {{ if .HasPassword }}
+                                <span class="text-green-600 font-medium">Set</span>
+                                {{ else }}
+                                <span class="text-gray-400 font-medium">Not Set</span>
+                                {{ end }}
+                            </td>
+                            <td class="px-6 py-4 border-x border-gray-200">
+                                {{ if .HasPassword }}
+                                <button hx-post="/reset-password" 
+                                        hx-vals='{"username": "{{ .Username }}"}'
+                                        hx-target="#password-status-{{ .Username }}"
+                                        hx-swap="innerHTML"
+                                        hx-confirm="Are you sure you want to reset the password for {{ .Username }}?"
+                                        class="bg-red-500 text-white px-3 py-1 rounded text-xs font-bold hover:bg-red-600 transition shadow-sm">
+                                    Reset Password
+                                </button>
+                                {{ else }}
+                                <span class="text-gray-400 text-xs italic">N/A</span>
+                                {{ end }}
+                            </td>
+                        </tr>
+                        {{ end }}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- Container for horizontal scrolling on small screens -->
         <div class="overflow-x-auto -mx-4 md:mx-0">
             <div id="transaction-results" class="min-w-full inline-block align-middle px-4 md:px-0">

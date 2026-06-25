@@ -34,11 +34,12 @@ func main() {
 	mux.HandleFunc("/", handlers.LoginHandler(db))
 
 	mux.Handle("/statement", middleware.Auth(db, http.HandlerFunc(handlers.StatementViewHandler(db))))
-	mux.Handle("/dashboard", middleware.Auth(db, middleware.AdminOnly(http.HandlerFunc(handlers.AdminDashboardHandler))))
+	mux.Handle("/dashboard", middleware.Auth(db, middleware.AdminOnly(http.HandlerFunc(handlers.AdminDashboardHandler(db)))))
 	mux.Handle("/upload", middleware.Auth(db, middleware.AdminOnly(http.HandlerFunc(api.UploadHandler(db)))))
 	mux.Handle("/adjustment", middleware.Auth(db, middleware.AdminOnly(http.HandlerFunc(api.AdjustmentHandler(db)))))
 	mux.Handle("/load-statement", middleware.Auth(db, middleware.AdminOnly(http.HandlerFunc(api.LoadStatementHandler(db)))))
 	mux.Handle("/statement-dates", middleware.Auth(db, middleware.AdminOnly(http.HandlerFunc(api.StatementDatesOptionsHandler(db)))))
+	mux.Handle("/reset-password", middleware.Auth(db, middleware.AdminOnly(http.HandlerFunc(api.ResetPasswordHandler(db)))))
 
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "CardSplit is running smoothly!")
