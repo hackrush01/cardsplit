@@ -3,7 +3,6 @@ package handlers
 import (
 	"database/sql"
 	"fmt"
-	"html/template"
 	"net/http"
 	"path/filepath"
 
@@ -62,12 +61,6 @@ func StatementViewHandler(db *sql.DB) http.HandlerFunc {
 			filepath.Join("web", "templates", "transactions.html"),
 		}
 
-		tmpl, err := template.ParseFiles(tmplFiles...)
-		if err != nil {
-			http.Error(w, "Failed to load templates", http.StatusInternalServerError)
-			return
-		}
-
-		tmpl.ExecuteTemplate(w, "statement.html", data)
+		RenderTemplateName(w, "statement.html", data, tmplFiles...)
 	}
 }

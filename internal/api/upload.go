@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/hackrush01/cardsplit/internal/config"
-	"github.com/hackrush01/cardsplit/internal/models"
 	"github.com/hackrush01/cardsplit/internal/parsers"
 	"github.com/hackrush01/cardsplit/internal/storage"
 )
@@ -66,54 +65,6 @@ func UploadHandler(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		// Load transactions back from DB to verify persistence and provide source-of-truth for UI
-		csvTxns, manualTxns, err := storage.GetStatementTransactions(db, stmt.CardType, stmt.StatementDate.Format("2006-01-02"))
-		if err != nil {
-			http.Error(w, "Failed to load transactions: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		users, err := storage.GetAllUsers(db, true)
-		if err != nil {
-			http.Error(w, "Failed to load users", http.StatusInternalServerError)
-			return
-		}
-
-		tmpl, err := template.ParseFiles("web/templates/transactions.html", "web/templates/admin_dashboard.html")
-		if err != nil {
-			http.Error(w, "Template error", http.StatusInternalServerError)
-			return
-		}
-
-		totalRewards := 0
-		for _, t := range csvTxns {
-			totalRewards += t.TotalRewards()
-		}
-		for _, t := range manualTxns {
-			totalRewards += t.TotalRewards()
-		}
-
-		data := struct {
-			Transactions       []models.Transaction
-			Warnings           []string
-			ManualTransactions []models.Transaction
-			Users              []string
-			CardType           string
-			StatementDate      string
-			TotalRewards       int
-		}{
-			Transactions:       csvTxns,
-			Warnings:           stmt.Warnings,
-			ManualTransactions: manualTxns,
-			Users:              users,
-			CardType:           stmt.CardType,
-			StatementDate:      stmt.StatementDate.Format("2006-01-02"),
-			TotalRewards:       totalRewards,
-		}
-
-		if err := tmpl.Execute(w, data); err != nil {
-			return
-		}
-		tmpl.ExecuteTemplate(w, "adjustment-form", data)
+		renderTransactionsFragment(w, db, stmt.CardType, stmt.StatementDate.Format("2006-01-02"), stmt.Warnings)
 	}
 }

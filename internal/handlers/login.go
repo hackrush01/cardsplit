@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/http"
-	"text/template"
 	"time"
 
 	"github.com/hackrush01/cardsplit/internal/storage"
@@ -35,13 +34,7 @@ func RenderLogin(db *sql.DB) http.HandlerFunc {
 			Users: users,
 		}
 
-		tmpl, err := template.ParseFiles("web/templates/login.html")
-		if err != nil {
-			http.Error(w, "Template error", http.StatusInternalServerError)
-			return
-		}
-
-		tmpl.Execute(w, data)
+		RenderTemplate(w, data, "web/templates/login.html")
 	}
 }
 

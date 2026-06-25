@@ -2,7 +2,6 @@ package api
 
 import (
 	"database/sql"
-	"html/template"
 	"net/http"
 	"strconv"
 	"time"
@@ -59,45 +58,6 @@ func AdjustmentHandler(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		// Reload everything to re-render the fragment
-		csvTxns, manualTxns, err := storage.GetStatementTransactions(db, cardType, statementDate)
-		if err != nil {
-			http.Error(w, "Load transactions", http.StatusInternalServerError)
-			return
-		}
-		users, err := storage.GetAllUsers(db, true)
-		if err != nil {
-			http.Error(w, "Load users", http.StatusInternalServerError)
-			return
-		}
-
-		tmpl, err := template.ParseFiles("web/templates/transactions.html", "web/templates/admin_dashboard.html")
-		if err != nil {
-			http.Error(w, "Template error", http.StatusInternalServerError)
-			return
-		}
-
-		totalRewards := 0
-		for _, t := range csvTxns {
-			totalRewards += t.TotalRewards()
-		}
-		for _, t := range manualTxns {
-			totalRewards += t.TotalRewards()
-		}
-
-		data := struct {
-			Transactions       []models.Transaction
-			Warnings           []string
-			ManualTransactions []models.Transaction
-			Users              []string
-			CardType           string
-			StatementDate      string
-			TotalRewards       int
-		}{csvTxns, nil, manualTxns, users, cardType, statementDate, totalRewards}
-
-		if err := tmpl.Execute(w, data); err != nil {
-			return
-		}
-		tmpl.ExecuteTemplate(w, "adjustment-form", data)
+		renderTransactionsFragment(w, db, cardType, statementDate, nil)
 	}
 }
