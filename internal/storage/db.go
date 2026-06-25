@@ -100,13 +100,21 @@ func GetUserRole(db *sql.DB, username string) string {
 }
 
 type UserStatus struct {
-	Username    string
-	HasPassword bool
+	Username     string
+	HasPassword  bool
+	TotalPending float64
 }
 
 // GetAllUserStatuses fetches all users and whether they have a password set.
 func GetAllUserStatuses(db *sql.DB) ([]UserStatus, error) {
-	query := `SELECT username, password_hash IS NOT NULL AND password_hash != '' FROM users ORDER BY role, username ASC`
+	query := `
+		SELECT u.username, 
+		       u.password_hash IS NOT NULL AND u.password_hash != '',
+		       COALESCE(SUM(t.amount), 0)
+		FROM users u
+		LEFT JOIN transactions t ON u.username = t.username AND t.is_payment = 0
+		GROUP BY u.username
+		ORDER BY u.role, u.username ASC`
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
@@ -116,9 +124,11 @@ func GetAllUserStatuses(db *sql.DB) ([]UserStatus, error) {
 	var users []UserStatus
 	for rows.Next() {
 		var u UserStatus
-		if err := rows.Scan(&u.Username, &u.HasPassword); err != nil {
+		var pendingPaise int
+		if err := rows.Scan(&u.Username, &u.HasPassword, &pendingPaise); err != nil {
 			return nil, err
 		}
+		u.TotalPending = float64(pendingPaise) / 100.0
 		users = append(users, u)
 	}
 	return users, nil
@@ -171,6 +181,7 @@ func createSchema(db *sql.DB) {
 		reward_multiplier INTEGER DEFAULT 0,
 		is_manual BOOLEAN DEFAULT 0,
 		is_payment BOOLEAN DEFAULT 0,
+		is_settlement BOOLEAN DEFAULT 0,
 		PRIMARY KEY (card_type, statement_date, key_timestamp),
 		FOREIGN KEY (card_type, statement_date) REFERENCES statements(card_type, statement_date) ON DELETE CASCADE
 		FOREIGN KEY (username) REFERENCES users(username) ON DELETE SET NULL

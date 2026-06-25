@@ -16,6 +16,7 @@ type Transaction struct {
 	RewardMultiplier int
 	IsPayment        bool
 	IsManual         bool
+	IsSettlement     bool
 }
 
 // AmountFloat is a helper method used exclusively by the UI to display the float value

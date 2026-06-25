@@ -48,8 +48,8 @@ func SaveStatement(db *sql.DB, stmt *models.Statement) (int64, error) {
 	// 3. Insert new transactions
 	var rowsInserted int64
 	ins, err := tx.Prepare(`
-		INSERT INTO transactions (card_type, statement_date, key_timestamp, username, transaction_type, transaction_timestamp, card_holder_name, description, amount, base_reward_value, reward_multiplier, is_payment)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+		INSERT INTO transactions (card_type, statement_date, key_timestamp, username, transaction_type, transaction_timestamp, card_holder_name, description, amount, base_reward_value, reward_multiplier, is_payment, is_settlement)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
 	if err != nil {
 		return 0, err
 	}
@@ -69,6 +69,7 @@ func SaveStatement(db *sql.DB, stmt *models.Statement) (int64, error) {
 			t.BaseRewardValue,
 			t.RewardMultiplier,
 			t.IsPayment,
+			t.IsSettlement,
 		)
 		if err != nil {
 			return 0, err

@@ -71,6 +71,7 @@
                         <tr>
                             <th scope="col" class="px-6 py-3 border-x border-gray-200 font-bold text-gray-600">Username</th>
                             <th scope="col" class="px-6 py-3 border-x border-gray-200 font-bold text-gray-600">Password Status</th>
+                            <th scope="col" class="px-6 py-3 border-x border-gray-200 font-bold text-gray-600">Total Pending</th>
                             <th scope="col" class="px-6 py-3 border-x border-gray-200 font-bold text-gray-600">Action</th>
                         </tr>
                     </thead>
@@ -85,7 +86,8 @@
                                 <span class="text-gray-400 font-medium">Not Set</span>
                                 {{ end }}
                             </td>
-                            <td class="px-6 py-4 border-x border-gray-200">
+                            <td class="px-6 py-4 border-x border-gray-200 font-medium">₹{{ printf "%.2f" .TotalPending }}</td>
+                            <td class="px-6 py-4 border-x border-gray-200 flex gap-2">
                                 {{ if .HasPassword }}
                                 <button hx-post="/reset-password" 
                                         hx-vals='{"username": "{{ .Username }}"}'
@@ -96,7 +98,16 @@
                                     Reset Password
                                 </button>
                                 {{ else }}
-                                <span class="text-gray-400 text-xs italic">N/A</span>
+                                <span class="text-gray-400 text-xs italic mt-1">N/A</span>
+                                {{ end }}
+
+                                {{ if gt .TotalPending 0.0 }}
+                                <button hx-post="/mark-paid" 
+                                        hx-vals='{"username": "{{ .Username }}"}'
+                                        hx-confirm="Are you sure you want to mark all dues as paid for {{ .Username }}?"
+                                        class="bg-green-500 text-white px-3 py-1 rounded text-xs font-bold hover:bg-green-600 transition shadow-sm">
+                                    Mark as Paid
+                                </button>
                                 {{ end }}
                             </td>
                         </tr>

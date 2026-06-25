@@ -34,26 +34,34 @@ func StatementViewHandler(db *sql.DB) http.HandlerFunc {
 			transactions, _ = storage.TransactionsByStatement(db, username, selectedCard, selectedDate)
 
 			for _, t := range transactions {
-				if !t.IsPayment {
+				if !t.IsPayment && !t.IsSettlement {
 					totalDuePaise += t.Amount
 				}
 			}
 		}
 
+		var totalPendingPaise int
+		if err := db.QueryRow("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE username = ? AND is_payment = 0", username).Scan(&totalPendingPaise); err != nil {
+			http.Error(w, "Failed to calculate total pending: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		data := struct {
-			AvailableCards []string
-			AvailableDates []string
-			SelectedCard   string
-			SelectedDate   string
-			Transactions   []models.Transaction
-			TotalDueRupees float64
+			AvailableCards     []string
+			AvailableDates     []string
+			SelectedCard       string
+			SelectedDate       string
+			Transactions       []models.Transaction
+			TotalDueRupees     float64
+			TotalPendingRupees float64
 		}{
-			AvailableCards: availableCards,
-			AvailableDates: availableDates,
-			SelectedCard:   selectedCard,
-			SelectedDate:   selectedDate,
-			Transactions:   transactions,
-			TotalDueRupees: float64(totalDuePaise) / 100.0,
+			AvailableCards:     availableCards,
+			AvailableDates:     availableDates,
+			SelectedCard:       selectedCard,
+			SelectedDate:       selectedDate,
+			Transactions:       transactions,
+			TotalDueRupees:     float64(totalDuePaise) / 100.0,
+			TotalPendingRupees: float64(totalPendingPaise) / 100.0,
 		}
 
 		tmplFiles := []string{
