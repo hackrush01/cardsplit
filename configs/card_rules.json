@@ -4,7 +4,8 @@
       "payments": [
         "(?i)BPPY CC PAYMENT",
         "(?i)AUTOPAY THANK YOU",
-        "(?i)AUTOPAY RETURNED"
+        "(?i)AUTOPAY RETURNED",
+        "(?i)CREDIT CARD PAYMENT Net Banking"
       ],
       "rewards": {
         "10": [
